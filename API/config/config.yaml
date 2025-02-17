@@ -1,0 +1,11 @@
+database:
+  mysql:
+    dsn: "winterchocolates:3uRfSQjfpn]@tcp(192.168.200.200:3306)/hrms?charset=utf8mb4&parseTime=True"
+  redis:
+    addr: "192.168.200.200:6379"
+    password: "3uRfSQjfpn]"
+    db: 0
+
+server:
+  port: 8081
+  mode: "debug"
