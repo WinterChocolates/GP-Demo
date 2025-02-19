@@ -24,7 +24,3 @@ type User struct {
 	TrainingRecords []TrainingRecord `gorm:"foreignKey:UserID" json:"-"`
 	Roles           []Role           `gorm:"many2many:user_roles;" json:"roles,omitempty"`
 }
-
-func (User) TableName() string {
-	return "users"
-}
