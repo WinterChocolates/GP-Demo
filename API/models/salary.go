@@ -1,15 +1,18 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type Salary struct {
-	SalaryID    uint      `gorm:"primaryKey;column:salary_id" json:"salary_id"`
-	UserID      uint      `gorm:"not null;uniqueIndex:uniq_user_month" json:"user_id"`
-	Month       string    `gorm:"size:6;not null;uniqueIndex:uniq_user_month" json:"month"`
-	Base        float64   `gorm:"type:decimal(10,2);not null" json:"base"`
-	Bonus       float64   `gorm:"type:decimal(10,2);default:0.00" json:"bonus"`
-	Deductions  float64   `gorm:"type:decimal(10,2);default:0.00" json:"deductions"`
-	PaymentDate time.Time `json:"payment_date,omitempty"`
+	gorm.Model
+	UserID      uint    `gorm:"uniqueIndex:uniq_user_month;not null"`
+	Month       string  `gorm:"type:char(6);uniqueIndex:uniq_user_month;comment:'格式: YYYYMM'"`
+	Base        float64 `gorm:"type:decimal(10,2);not null"`
+	Bonus       float64 `gorm:"type:decimal(10,2);default:0.00"`
+	Deductions  float64 `gorm:"type:decimal(10,2);default:0.00"`
+	PaymentDate *time.Time
 
-	User User `gorm:"foreignKey:UserID" json:"-"`
+	User User `gorm:"foreignKey:UserID"`
 }

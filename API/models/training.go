@@ -1,15 +1,18 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type Training struct {
-	TrainingID  uint      `gorm:"primaryKey;column:training_id" json:"training_id"`
-	Title       string    `gorm:"size:100;not null" json:"title"`
-	Description string    `gorm:"type:text" json:"description"`
-	StartTime   time.Time `gorm:"not null" json:"start_time"`
-	EndTime     time.Time `gorm:"not null" json:"end_time"`
-	Location    string    `gorm:"size:100" json:"location,omitempty"`
-	Capacity    uint      `json:"capacity,omitempty"`
+	gorm.Model
+	Title       string `gorm:"type:varchar(100);not null"`
+	Description string
+	StartTime   time.Time `gorm:"not null"`
+	EndTime     time.Time `gorm:"not null"`
+	Location    string    `gorm:"type:varchar(100)"`
+	Capacity    uint
 
-	Records []TrainingRecord `gorm:"foreignKey:TrainingID" json:"-"`
+	Records []TrainingRecord
 }

@@ -1,13 +1,15 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type Notice struct {
-	NoticeID    uint      `gorm:"primaryKey;column:notice_id" json:"notice_id"`
-	Title       string    `gorm:"size:200;not null" json:"title"`
-	Content     string    `gorm:"type:text;not null" json:"content"`
-	PublishTime time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"publish_time"`
-	ExpireTime  time.Time `json:"expire_time,omitempty"`
-	TargetType  string    `gorm:"type:ENUM('all','department');default:'all'" json:"target_type"`
-	Department  string    `gorm:"size:50" json:"department,omitempty"`
+	gorm.Model
+	Title      string `gorm:"type:varchar(200);not null"`
+	Content    string `gorm:"type:text;not null"`
+	ExpireTime *time.Time
+	TargetType string `gorm:"type:ENUM('all','department');default:'all'"`
+	Department string `gorm:"type:varchar(50)"`
 }

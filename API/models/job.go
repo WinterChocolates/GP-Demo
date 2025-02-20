@@ -1,16 +1,18 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type Job struct {
-	JobID          uint      `gorm:"primaryKey;column:job_id" json:"job_id"`
-	Title          string    `gorm:"size:100;not null" json:"title" binding:"required"`
-	Description    string    `gorm:"type:text;not null" json:"description"`
-	Requirements   string    `gorm:"type:text;not null" json:"requirements"`
-	SalaryRange    string    `gorm:"size:50" json:"salary_range,omitempty"`
-	PostDate       time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"post_date"`
-	ExpirationDate time.Time `json:"expiration_date"`
-	Status         string    `gorm:"type:ENUM('open','closed');default:'open'" json:"status"`
+	gorm.Model
+	Title          string `gorm:"type:varchar(100);not null"`
+	Description    string `gorm:"type:text;not null"`
+	Requirements   string `gorm:"type:text;not null"`
+	SalaryRange    string `gorm:"type:varchar(50)"`
+	ExpirationDate *time.Time
+	Status         string `gorm:"type:ENUM('open','closed');default:'open'"`
 
-	Applications []Application `gorm:"foreignKey:JobID" json:"-"`
+	Applications []Application
 }
