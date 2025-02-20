@@ -1,6 +1,8 @@
 database:
   mysql:
     dsn: "winterchocolates:3uRfSQjfpn]@tcp(192.168.200.200:3306)/hrms?charset=utf8mb4&parseTime=True"
+    max_retries: 3
+    retry_interval: 5
   redis:
     addr: "192.168.200.200:6379"
     password: "3uRfSQjfpn]"
@@ -10,6 +12,8 @@ database:
     dial_timeout: 5s
     read_timeout: 3s
     write_timeout:  3s
+    max_retries: 3
+    retry_interval: 5
 
 server:
   port: 8081
