@@ -5,6 +5,11 @@ database:
     addr: "192.168.200.200:6379"
     password: "3uRfSQjfpn]"
     db: 0
+    pool_size: 20
+    min_idle_conns: 5
+    dial_timeout: 5s
+    read_timeout: 3s
+    write_timeout:  3s
 
 server:
   port: 8081

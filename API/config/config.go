@@ -3,12 +3,15 @@ package config
 import (
 	"fmt"
 	"github.com/spf13/viper"
+	"path/filepath"
 )
 
 func InitConfig() error {
+	configPath := filepath.Join("config")
+
 	viper.SetConfigName("config")
-	viper.SetConfigFile("yaml")
-	viper.AddConfigPath("./config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(configPath)
 	viper.AddConfigPath(".")
 
 	viper.SetDefault("database.mysql.max_idle_conn", 10)
