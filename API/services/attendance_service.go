@@ -1,10 +1,11 @@
 package services
 
 import (
-	"API/models"
 	"context"
-	"gorm.io/gorm"
 	"time"
+
+	"API/models"
+	"gorm.io/gorm"
 )
 
 type AttendanceService struct {

@@ -3,9 +3,10 @@ package cache
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
-	"time"
 )
 
 var RedisClient *redis.Client

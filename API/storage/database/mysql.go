@@ -1,13 +1,14 @@
 package database
 
 import (
-	"API/models"
 	"fmt"
+	"time"
+
+	"API/models"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"time"
 )
 
 var DB *gorm.DB

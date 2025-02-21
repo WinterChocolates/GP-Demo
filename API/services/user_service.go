@@ -1,15 +1,16 @@
 package services
 
 import (
-	"API/models"
-	"API/storage/cache"
 	"context"
 	"errors"
 	"fmt"
-	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 	"log"
 	"time"
+
+	"API/models"
+	"API/storage/cache"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type UserService struct {
