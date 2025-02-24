@@ -12,9 +12,9 @@ type AttendanceService struct {
 	db *gorm.DB
 }
 
-func NewAttendanceService(db *gorm.DB) *AttendanceService {
-	return &AttendanceService{db: db}
-}
+//func NewAttendanceService(db *gorm.DB) *AttendanceService {
+//	return &AttendanceService{db: db}
+//}
 
 // ClockIn 打卡上班
 func (s *AttendanceService) ClockIn(ctx context.Context, userID uint) error {
