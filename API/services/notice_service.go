@@ -21,7 +21,10 @@ func NewNoticeService(db *gorm.DB, cache cache.Provider) *NoticeService {
 func (s *NoticeService) CreateNotice(ctx context.Context, notice *models.Notice) error {
 	err := s.db.WithContext(ctx).Create(notice).Error
 	if err == nil {
-		s.cache.Del(ctx, "active_notices")
+		err := s.cache.Del(ctx, "active_notices")
+		if err != nil {
+			return err
+		}
 	}
 	return err
 }
@@ -37,7 +40,10 @@ func (s *NoticeService) GetActiveNotices(ctx context.Context) ([]models.Notice, 
 		Order("created_at DESC").
 		Find(&notices).Error
 	if err == nil {
-		s.cache.SetObject(ctx, cacheKey, notices, 5*time.Minute)
+		err := s.cache.SetObject(ctx, cacheKey, notices, 5*time.Minute)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return notices, err
 }
