@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -24,7 +25,7 @@ type RedisConfig struct {
 	RetryInterval time.Duration
 }
 
-func loadMySQLConfig() *RedisConfig {
+func loadRedisConfig() *RedisConfig {
 	return &RedisConfig{
 		Addr:          viper.GetString("database.redis.addr"),
 		Password:      viper.GetString("database.redis.password"),
@@ -39,8 +40,8 @@ func loadMySQLConfig() *RedisConfig {
 	}
 }
 
-func InitRedis() error {
-	config := loadMySQLConfig()
+func InitRedis() (*redis.Client, error) {
+	config := loadRedisConfig()
 
 	RedisClient = redis.NewClient(&redis.Options{
 		Addr:         config.Addr,
@@ -69,17 +70,32 @@ func InitRedis() error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("连接Redis失败（重试%d次）: %v", config.MaxRetries, err)
+		return RedisClient, fmt.Errorf("连接Redis失败（重试%d次）: %v", config.MaxRetries, err)
+	}
+	return RedisClient, nil
+}
+
+func CheckRedisHealth(ctx context.Context) error {
+	if RedisClient == nil {
+		return fmt.Errorf("redis客户端未初始化")
+	}
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	if _, err := RedisClient.Ping(ctx).Result(); err != nil {
+		return fmt.Errorf("redis连接异常: %v", err)
 	}
 	return nil
 }
 
-func CheckRedisHealth() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
-	if _, err := RedisClient.Ping(ctx).Result(); err != nil {
-		return fmt.Errorf("redis连接异常: %v", err)
+func Close() error {
+	if RedisClient == nil {
+		return nil
 	}
+
+	if err := RedisClient.Close(); err != nil {
+		return fmt.Errorf("关闭Redis连接失败: %w", err)
+	}
+
+	log.Println("✅ Redis连接已关闭")
 	return nil
 }
