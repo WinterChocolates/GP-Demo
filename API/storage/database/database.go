@@ -1,7 +1,9 @@
 package database
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"API/models"
@@ -35,6 +37,7 @@ func loadMySQLConfig() MySQLConfig {
 
 func InitMySQL() (*gorm.DB, error) {
 	config := loadMySQLConfig()
+	//fmt.Printf("尝试连接数据库，DSN: %s\n", config.DSN)
 
 	var db *gorm.DB
 	var err error
@@ -72,13 +75,17 @@ func InitMySQL() (*gorm.DB, error) {
 	return db, autoMigrate(db)
 }
 
-func CheckMySQLHealth() error {
+func CheckMySQLHealth(ctx context.Context) error {
+	if DB == nil {
+		return fmt.Errorf("数据库未初始化")
+	}
 	sqlDB, err := DB.DB()
 	if err != nil {
 		return fmt.Errorf("获取数据库实例失败: %v", err)
 	}
-
-	if err := sqlDB.Ping(); err != nil {
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	if err := sqlDB.PingContext(ctx); err != nil {
 		return fmt.Errorf("数据库连接异常: %v", err)
 	}
 	return nil
@@ -97,4 +104,23 @@ func autoMigrate(db *gorm.DB) error {
 		&models.TrainingRecord{},
 		&models.User{},
 	)
+}
+
+func Close() error {
+	if DB == nil {
+		return nil
+	}
+
+	sqlDB, err := DB.DB()
+	if err != nil {
+		return fmt.Errorf("获取数据库实例失败: %w", err)
+	}
+
+	// 关闭所有连接
+	if err := sqlDB.Close(); err != nil {
+		return fmt.Errorf("关闭数据库连接失败: %w", err)
+	}
+
+	log.Println("✅ MySQL连接已关闭")
+	return nil
 }
