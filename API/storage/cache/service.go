@@ -11,31 +11,16 @@ import (
 )
 
 type Provider interface {
-	Get(ctx context.Context, key string) (string, error)
-	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error
-	Del(ctx context.Context, keys ...string) error
-	GetObject(ctx context.Context, key string, dest interface{}) error
+	GetObject(ctx context.Context, key string, value interface{}) error
 	SetObject(ctx context.Context, key string, value interface{}, expiration time.Duration) error
-	HSet(ctx context.Context, key string, values ...interface{}) error
-	HGetAll(ctx context.Context, key string) (map[string]string, error)
+	Del(ctx context.Context, keys ...string) error
 }
-
 type RedisCacheService struct {
 	client *redis.Client
 }
 
 func NewRedisCacheService(client *redis.Client) Provider {
 	return &RedisCacheService{client: client}
-}
-
-// Get Redis 获取
-func (r *RedisCacheService) Get(ctx context.Context, key string) (string, error) {
-	return r.client.Get(ctx, key).Result()
-}
-
-// Set Redis 修改
-func (r *RedisCacheService) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
-	return r.client.Set(ctx, key, value, expiration).Err()
 }
 
 // Del Redis 删除
@@ -47,7 +32,7 @@ func (r *RedisCacheService) GetObject(ctx context.Context, key string, dest inte
 	val, err := r.client.Get(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return fmt.Errorf("key %s not found", key)
+			return fmt.Errorf("key值 %s 找不到", key)
 		}
 		return err
 	}
@@ -57,15 +42,7 @@ func (r *RedisCacheService) GetObject(ctx context.Context, key string, dest inte
 func (r *RedisCacheService) SetObject(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
 	data, err := json.Marshal(value)
 	if err != nil {
-		return fmt.Errorf("marshal error: %w", err)
+		return fmt.Errorf("封送错误: %w", err)
 	}
 	return r.client.Set(ctx, key, data, expiration).Err()
-}
-
-func (r *RedisCacheService) HSet(ctx context.Context, key string, values ...interface{}) error {
-	return r.client.HSet(ctx, key, values...).Err()
-}
-
-func (r *RedisCacheService) HGetAll(ctx context.Context, key string) (map[string]string, error) {
-	return r.client.HGetAll(ctx, key).Result()
 }
