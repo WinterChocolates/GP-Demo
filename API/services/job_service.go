@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"API/models"
 	"gorm.io/gorm"
@@ -19,6 +20,20 @@ func NewJobService(db *gorm.DB) *JobService {
 // CreateJob 创建新职位
 func (s *JobService) CreateJob(ctx context.Context, job *models.Job) error {
 	return s.db.WithContext(ctx).Create(job).Error
+}
+
+// UpdateJob 更新职位信息
+func (s *JobService) UpdateJob(ctx context.Context, id uint, job *models.Job) error {
+	var existingJob models.Job
+	if err := s.db.WithContext(ctx).First(&existingJob, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("职位不存在")
+		}
+		return fmt.Errorf("查询职位失败: %w", err)
+	}
+
+	// 更新职位信息
+	return s.db.WithContext(ctx).Model(&existingJob).Updates(job).Error
 }
 
 // GetOpenJobs 获取开放职位列表

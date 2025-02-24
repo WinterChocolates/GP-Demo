@@ -13,9 +13,9 @@ type SalaryService struct {
 	db *gorm.DB
 }
 
-func NewSalaryService(db *gorm.DB) *SalaryService {
-	return &SalaryService{db: db}
-}
+//func NewSalaryService(db *gorm.DB) *SalaryService {
+//	return &SalaryService{db: db}
+//}
 
 // GenerateSalary 生成薪资记录
 func (s *SalaryService) GenerateSalary(ctx context.Context, userID uint, month string) error {

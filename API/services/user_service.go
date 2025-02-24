@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"time"
 
 	"API/models"
 	"API/storage/cache"
+	"API/utils"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -53,42 +53,59 @@ func (s *UserService) RegisterUser(ctx context.Context, user *models.User) error
 	})
 }
 
-// GetUserByID 获取用户详情
+// GetUserByID 根据ID获取用户
 func (s *UserService) GetUserByID(ctx context.Context, userID uint) (*models.User, error) {
-	cacheKey := fmt.Sprintf("user:%d", userID)
 	var user models.User
-
-	// 尝试从缓存获取
-	if err := s.cache.GetObject(ctx, cacheKey, &user); err == nil {
-		return &user, nil
+	if err := s.db.WithContext(ctx).Preload("Roles").First(&user, userID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("用户不存在")
+		}
+		return nil, fmt.Errorf("查询用户失败: %w", err)
 	}
-
-	// 数据库查询
-	err := s.db.WithContext(ctx).Preload("Roles.Permissions").First(&user, userID).Error
-	if err != nil {
-		return nil, err
-	}
-
-	// 缓存用户数据（设置1小时过期）
-	if err := s.cache.SetObject(ctx, cacheKey, user, time.Hour); err != nil {
-		// 记录缓存错误但不中断流程
-		log.Printf("缓存用户数据失败: %v", err)
-	}
-
 	return &user, nil
 }
 
-// UpdateUserProfile 更新用户资料
-func (s *UserService) UpdateUserProfile(ctx context.Context, userID uint, updates map[string]interface{}) error {
+// UpdateProfile 更新用户资料
+func (s *UserService) UpdateProfile(ctx context.Context, userID uint, updates map[string]interface{}) error {
 	// 清除缓存
-	defer func(cache cache.Provider, ctx context.Context, keys ...string) {
-		err := cache.Del(ctx, keys...)
-		if err != nil {
-
-		}
-	}(s.cache, ctx, fmt.Sprintf("user:%d", userID))
+	if err := s.cache.Del(ctx, fmt.Sprintf("user:%d", userID)); err != nil {
+		log.Printf("缓存清除失败: %v", err)
+	}
 
 	return s.db.WithContext(ctx).Model(&models.User{}).
 		Where("id = ?", userID).
 		Updates(updates).Error
+}
+
+// Authenticate 用户认证
+func (s *UserService) Authenticate(ctx context.Context, username, password string) (string, error) {
+	var user models.User
+	if err := s.db.WithContext(ctx).Where("username = ?", username).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", errors.New("用户不存在")
+		}
+		return "", fmt.Errorf("查询用户失败: %w", err)
+	}
+
+	// 验证密码
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+		return "", errors.New("密码错误")
+	}
+
+	// 获取用户角色
+	var roles []string
+	if err := s.db.WithContext(ctx).Model(&user).Association("Roles").Find(&user.Roles); err != nil {
+		return "", fmt.Errorf("获取角色失败: %w", err)
+	}
+	for _, role := range user.Roles {
+		roles = append(roles, role.RoleName)
+	}
+
+	// 生成JWT令牌
+	token, err := utils.GenerateToken(user.ID, roles)
+	if err != nil {
+		return "", fmt.Errorf("生成令牌失败: %w", err)
+	}
+
+	return token, nil
 }
