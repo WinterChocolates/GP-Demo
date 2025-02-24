@@ -22,6 +22,15 @@ func SetupRouter(
 ) *gin.Engine {
 	router := gin.New()
 
+	// 初始化所有服务
+	attendanceService := services.NewAttendanceService(database.DB)
+	trainingService := services.NewTrainingService(database.DB)
+	salaryService := services.NewSalaryService(database.DB)
+	noticeService := services.NewNoticeService(
+		database.DB,
+		cache.NewRedisCacheService(cache.RedisClient),
+	)
+
 	// 全局中间件（顺序敏感）
 	router.Use(
 		middlewares.RequestLogger(zap.L()),
@@ -39,7 +48,6 @@ func SetupRouter(
 			userCtrl := controllers.NewUserController(userService)
 			public.POST("/auth/login", userCtrl.Login)
 			public.POST("/auth/register", userCtrl.Register)
-
 			public.GET("/health", healthCheckHandler)
 		}
 
@@ -49,17 +57,47 @@ func SetupRouter(
 			middlewares.AuditLogger(zap.L()),
 		)
 		{
-			userCtrl := controllers.NewUserController(userService)
-			auth.GET("/users/me", userCtrl.GetProfile)
-			auth.PUT("/users/me", userCtrl.UpdateProfile)
+			// 考勤相关
+			attendanceCtrl := controllers.NewAttendanceController(attendanceService)
+			auth.POST("/attendance/clock-in", attendanceCtrl.ClockIn)
+			auth.POST("/attendance/clock-out", attendanceCtrl.ClockOut)
+			auth.GET("/attendance/monthly", attendanceCtrl.GetMonthly)
+
+			// 培训相关
+			trainingCtrl := controllers.NewTrainingController(trainingService)
+			auth.GET("/trainings", trainingCtrl.GetTrainings)
+			auth.POST("/trainings/:id/register", trainingCtrl.RegisterTraining)
+			auth.GET("/trainings/my", trainingCtrl.GetMyTrainings)
+
+			// 薪资相关
+			salaryCtrl := controllers.NewSalaryController(salaryService)
+			auth.GET("/salaries/:month", salaryCtrl.GetSalaryDetails)
+
+			// 通知相关（对所有认证用户开放）
+			noticeCtrl := controllers.NewNoticeController(noticeService)
+			auth.GET("/notices", noticeCtrl.GetNotices)
 		}
 
 		// 管理员路由
 		admin := apiV1.Group("").Use(
+			middlewares.JWT(),
 			middlewares.AdminOnly(),
 			middlewares.OperationLog(zap.L()),
 		)
 		{
+			// 培训管理
+			trainingCtrl := controllers.NewTrainingController(trainingService)
+			admin.POST("/trainings", trainingCtrl.CreateTraining)
+
+			// 薪资管理
+			salaryCtrl := controllers.NewSalaryController(salaryService)
+			admin.POST("/salaries/generate", salaryCtrl.GenerateSalary)
+
+			// 通知管理
+			noticeCtrl := controllers.NewNoticeController(noticeService)
+			admin.POST("/notices", noticeCtrl.CreateNotice)
+
+			// 岗位管理
 			jobCtrl := controllers.NewJobController(jobService)
 			admin.GET("/jobs", jobCtrl.ListJobs)
 			admin.POST("/jobs", jobCtrl.CreateJob)
