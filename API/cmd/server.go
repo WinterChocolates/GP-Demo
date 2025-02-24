@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -30,20 +31,23 @@ func StartServer(router *gin.Engine) {
 	// 启动服务器协程
 	go func() {
 		log.Printf("🚀 服务器启动中，监听地址: %s", address)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			serverErr <- err
-		} else {
-			serverErr <- nil
-		}
+		err := server.ListenAndServe()
+		serverErr <- err // 直接传递错误，不做提前判断
 	}()
 
 	// 等待信号或错误
 	select {
 	case err := <-serverErr:
 		if err != nil {
-			log.Fatalf("❌ 服务器启动失败: %v", err)
+			// 使用 errors.Is 检查错误是否为 http.ErrServerClosed
+			if errors.Is(err, http.ErrServerClosed) {
+				log.Println("✅ 服务器正常关闭")
+			} else {
+				log.Fatalf("❌ 服务器启动失败: %v", err)
+			}
+		} else {
+			log.Println("✅ 服务器正常关闭")
 		}
-		log.Println("✅ 服务器正常关闭")
 	case sig := <-sigChan:
 		log.Printf("🛑 收到信号 %s，开始优雅关闭...", sig)
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
