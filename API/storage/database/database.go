@@ -37,33 +37,36 @@ func loadMySQLConfig() MySQLConfig {
 
 func InitMySQL() (*gorm.DB, error) {
 	config := loadMySQLConfig()
-	//fmt.Printf("尝试连接数据库，DSN: %s\n", config.DSN)
+	log.Printf("尝试连接数据库，DSN: %s", config.DSN)
 
 	var db *gorm.DB
 	var err error
 
-	for i := 0; i <= config.MaxRetries; i++ {
+	for attempt := 1; attempt <= config.MaxRetries+1; attempt++ {
 		db, err = gorm.Open(mysql.Open(config.DSN), &gorm.Config{
 			DisableForeignKeyConstraintWhenMigrating: true,
 			Logger:                                   logger.Default.LogMode(logger.Info),
 		})
 
 		if err == nil {
+			log.Printf("✅ 数据库连接成功（第%d次尝试）", attempt)
 			break
 		}
 
-		if i < config.MaxRetries {
+		log.Printf("❌ 数据库连接失败（第%d次尝试）: %v", attempt, err)
+		if attempt < config.MaxRetries+1 {
+			log.Printf("将在%d秒后重试...", config.RetryInterval/time.Second)
 			time.Sleep(config.RetryInterval)
 		}
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("数据库连接失败: %v", err)
+		return nil, fmt.Errorf("数据库连接失败（重试%d次）: %v", config.MaxRetries, err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("获取底层数据库实例失败: %v", err)
 	}
 
 	sqlDB.SetMaxIdleConns(config.MaxIdleConn)
@@ -71,7 +74,6 @@ func InitMySQL() (*gorm.DB, error) {
 	sqlDB.SetConnMaxLifetime(config.MaxLifetime)
 
 	DB = db
-
 	return db, autoMigrate(db)
 }
 
@@ -110,17 +112,13 @@ func Close() error {
 	if DB == nil {
 		return nil
 	}
-
 	sqlDB, err := DB.DB()
 	if err != nil {
 		return fmt.Errorf("获取数据库实例失败: %w", err)
 	}
-
-	// 关闭所有连接
 	if err := sqlDB.Close(); err != nil {
 		return fmt.Errorf("关闭数据库连接失败: %w", err)
 	}
-
 	log.Println("✅ MySQL连接已关闭")
 	return nil
 }

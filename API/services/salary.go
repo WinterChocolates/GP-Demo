@@ -46,3 +46,12 @@ func (s *SalaryService) GetSalaryDetails(ctx context.Context, userID uint, month
 	}
 	return &salary, err
 }
+
+// GetSalaryHistory 获取薪资发放记录
+func (s *SalaryService) GetSalaryHistory(ctx context.Context, userID uint) ([]models.Salary, error) {
+	var salaries []models.Salary
+	if err := s.db.WithContext(ctx).Where("user_id = ?", userID).Find(&salaries).Error; err != nil {
+		return nil, err
+	}
+	return salaries, nil
+}

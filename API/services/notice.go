@@ -47,3 +47,13 @@ func (s *NoticeService) GetActiveNotices(ctx context.Context) ([]models.Notice, 
 	}
 	return notices, err
 }
+
+// DeleteNotice 删除通知
+func (s *NoticeService) DeleteNotice(ctx context.Context, noticeID uint) error {
+	return s.db.WithContext(ctx).Delete(&models.Notice{}, noticeID).Error
+}
+
+// UpdateNotice 更新通知
+func (s *NoticeService) UpdateNotice(ctx context.Context, noticeID uint, notice *models.Notice) error {
+	return s.db.WithContext(ctx).Model(&models.Notice{}).Where("id = ?", noticeID).Updates(notice).Error
+}

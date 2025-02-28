@@ -28,13 +28,36 @@ func NewUserService(db *gorm.DB, cache cache.Provider) *UserService {
 // RegisterUser 用户注册
 func (s *UserService) RegisterUser(ctx context.Context, user *models.User) error {
 	// 检查用户名唯一性
-	var count int64
+	var usernameCount int64
 	if err := s.db.WithContext(ctx).Model(&models.User{}).
-		Where("username = ?", user.Username).Count(&count).Error; err != nil {
+		Where("username = ?", user.Username).Count(&usernameCount).Error; err != nil {
 		return fmt.Errorf("检查用户名失败: %w", err)
 	}
-	if count > 0 {
+	if usernameCount > 0 {
 		return errors.New("用户名已存在")
+	}
+
+	// 检查联系方式唯一性
+	if user.Phone != "" {
+		var phoneCount int64
+		if err := s.db.WithContext(ctx).Model(&models.User{}).
+			Where("phone = ?", user.Phone).Count(&phoneCount).Error; err != nil {
+			return fmt.Errorf("检查手机号失败: %w", err)
+		}
+		if phoneCount > 0 {
+			return errors.New("手机号已被注册")
+		}
+	}
+
+	if user.Email != "" {
+		var emailCount int64
+		if err := s.db.WithContext(ctx).Model(&models.User{}).
+			Where("email = ?", user.Email).Count(&emailCount).Error; err != nil {
+			return fmt.Errorf("检查邮箱失败: %w", err)
+		}
+		if emailCount > 0 {
+			return errors.New("邮箱已被注册")
+		}
 	}
 
 	// 密码哈希处理
@@ -48,19 +71,15 @@ func (s *UserService) RegisterUser(ctx context.Context, user *models.User) error
 		if err := tx.Create(user).Error; err != nil {
 			return err
 		}
-		// 分配默认角色（示例）
-		return tx.Model(user).Association("Roles").Append([]models.Role{{RoleName: "employee"}})
+		return tx.Model(user).Association("Roles").Append([]models.Role{{Name: "candidate"}})
 	})
 }
 
-// GetUserByID 根据ID获取用户
+// GetUserByID 根据ID获取用户信息
 func (s *UserService) GetUserByID(ctx context.Context, userID uint) (*models.User, error) {
 	var user models.User
-	if err := s.db.WithContext(ctx).Preload("Roles").First(&user, userID).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("用户不存在")
-		}
-		return nil, fmt.Errorf("查询用户失败: %w", err)
+	if err := s.db.WithContext(ctx).First(&user, userID).Error; err != nil {
+		return nil, err
 	}
 	return &user, nil
 }
@@ -75,6 +94,7 @@ func (s *UserService) UpdateProfile(ctx context.Context, userID uint, updates ma
 	return s.db.WithContext(ctx).Model(&models.User{}).
 		Where("id = ?", userID).
 		Updates(updates).Error
+
 }
 
 // Authenticate 用户认证
@@ -98,7 +118,7 @@ func (s *UserService) Authenticate(ctx context.Context, username, password strin
 		return "", fmt.Errorf("获取角色失败: %w", err)
 	}
 	for _, role := range user.Roles {
-		roles = append(roles, role.RoleName)
+		roles = append(roles, role.Name)
 	}
 
 	// 生成JWT令牌

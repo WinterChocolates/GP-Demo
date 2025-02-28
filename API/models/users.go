@@ -8,22 +8,23 @@ import (
 
 type User struct {
 	gorm.Model
-	Username       string `gorm:"type:varchar(50);uniqueIndex;not null"`
-	PasswordHash   string `gorm:"type:char(60);not null"`
-	UserType       string `gorm:"type:ENUM('admin','employee','applicant');not null"`
-	Department     string `gorm:"type:varchar(50)"`
-	Position       string `gorm:"type:varchar(50)"`
-	HireDate       *time.Time
-	SalaryBase     float64 `gorm:"type:decimal(10,2)"`
-	Education      string  `gorm:"type:text"`
-	WorkExperience string  `gorm:"type:text"`
-	Skills         string  `gorm:"type:text"`
-	ResumePath     string  `gorm:"type:varchar(255)"`
-	IsActive       bool    `gorm:"default:true"`
+	Username     string     `gorm:"size:50;uniqueIndex;not null;comment:用户名"`
+	Email        string     `gorm:"size:50;uniqueIndex;not null;comment:邮箱"`
+	Phone        string     `gorm:"size:20;uniqueIndex;not null;comment:手机号"`
+	PasswordHash string     `gorm:"size:60;not null;comment:密码哈希"`
+	Usertype     string     `gorm:"type:ENUM('admin','employee','candidate');default:'candidate';index;comment:用户类型"`
+	Department   string     `gorm:"size:50;index;comment:所属部门"`
+	Position     string     `gorm:"size:50;index;comment:职位"`
+	HireDate     *time.Time `gorm:"comment:入职日期"`
+	SalaryBase   float64    `gorm:"type:decimal(12,2);comment:基本工资"`
+	Education    string     `gorm:"type:text;comment:教育背景"`
+	Experience   string     `gorm:"type:text;comment:工作经历"`
+	Skills       string     `gorm:"type:text;comment:技能列表"`
+	Active       bool       `gorm:"default:true;index;comment:账户状态"`
 
-	Applications    []Application
-	Attendances     []Attendance
-	Salaries        []Salary
-	TrainingRecords []TrainingRecord
-	Roles           []Role `gorm:"many2many:user_roles;"`
+	Applications    []Application    `gorm:"foreignKey:UserID"`
+	Attendances     []Attendance     `gorm:"foreignKey:UserID"`
+	Salaries        []Salary         `gorm:"foreignKey:UserID"`
+	TrainingRecords []TrainingRecord `gorm:"foreignKey:UserID"`
+	Roles           []Role           `gorm:"many2many:user_roles;"`
 }

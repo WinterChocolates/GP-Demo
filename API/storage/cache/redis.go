@@ -42,6 +42,7 @@ func loadRedisConfig() *RedisConfig {
 
 func InitRedis() (*redis.Client, error) {
 	config := loadRedisConfig()
+	log.Printf("尝试连接Redis，地址: %s", config.Addr)
 
 	RedisClient = redis.NewClient(&redis.Options{
 		Addr:         config.Addr,
@@ -55,16 +56,19 @@ func InitRedis() (*redis.Client, error) {
 	})
 
 	var err error
-	for i := 0; i <= config.MaxRetries; i++ {
+	for attempt := 1; attempt <= config.MaxRetries+1; attempt++ {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		_, err = RedisClient.Ping(ctx).Result()
 		cancel()
 
 		if err == nil {
+			log.Printf("✅ Redis连接成功（第%d次尝试）", attempt)
 			break
 		}
 
-		if i < config.MaxRetries {
+		log.Printf("❌ Redis连接失败（第%d次尝试）: %v", attempt, err)
+		if attempt < config.MaxRetries+1 {
+			log.Printf("将在%d秒后重试...", config.RetryInterval/time.Second)
 			time.Sleep(config.RetryInterval)
 		}
 	}
@@ -91,11 +95,9 @@ func Close() error {
 	if RedisClient == nil {
 		return nil
 	}
-
 	if err := RedisClient.Close(); err != nil {
 		return fmt.Errorf("关闭Redis连接失败: %w", err)
 	}
-
 	log.Println("✅ Redis连接已关闭")
 	return nil
 }

@@ -50,3 +50,35 @@ func (s *TrainingService) GetMyTrainings(ctx context.Context, userID uint) ([]mo
 	err := s.db.WithContext(ctx).Preload("Training").Where("user_id = ?", userID).Find(&records).Error
 	return records, err
 }
+
+// UpdateTrainingRecord 更新培训记录
+func (s *TrainingService) UpdateTrainingRecord(ctx context.Context, recordID uint, status string, score uint8) error {
+	var record models.TrainingRecord
+	if err := s.db.WithContext(ctx).First(&record, recordID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("培训记录不存在")
+		}
+		return err
+	}
+	if status != "" {
+		record.Status = status
+	}
+	if score != 0 {
+		record.Score = score
+	}
+	return s.db.WithContext(ctx).Save(&record).Error
+}
+
+// CancelTrainingRegistration 取消培训注册
+func (s *TrainingService) CancelTrainingRegistration(ctx context.Context, recordID uint) error {
+	return s.db.WithContext(ctx).Delete(&models.TrainingRecord{}, recordID).Error
+}
+
+// GetTrainingByID 获取培训详情
+func (s *TrainingService) GetTrainingByID(ctx context.Context, trainingID uint) (*models.Training, error) {
+	var training models.Training
+	if err := s.db.WithContext(ctx).First(&training, trainingID).Error; err != nil {
+		return nil, err
+	}
+	return &training, nil
+}

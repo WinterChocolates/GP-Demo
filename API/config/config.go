@@ -27,7 +27,7 @@ func InitConfig() error {
 	viper.SetDefault("jwt.secret", "default-insecure-secret")
 	viper.SetDefault("jwt.expiration", 720*time.Hour) // 30天
 
-	// 环境变量支持（自动转换 HRMS_DATABASE_MYSQL_DSN 到 database.mysql.dsn）
+	// 环境变量支持
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("HRMS")
 
@@ -42,11 +42,11 @@ func InitConfig() error {
 		log.Printf("✅ 成功加载配置文件: %s", viper.ConfigFileUsed())
 	}
 
-	// 调试输出关键配置
+	// 输出关键配置
 	log.Println("📄 有效配置:")
-	log.Printf("Server Port: %s", viper.GetString("server.port"))
-	log.Printf("MySQL DSN: %s", viper.GetString("database.mysql.dsn"))
-	log.Printf("JWT Secret: %s", maskSecret(viper.GetString("jwt.secret")))
+	log.Printf("  Server Port: %s", viper.GetString("server.port"))
+	log.Printf("  MySQL DSN: %s", viper.GetString("database.mysql.dsn"))
+	log.Printf("  JWT Secret: %s", maskSecret(viper.GetString("jwt.secret")))
 
 	return nil
 }

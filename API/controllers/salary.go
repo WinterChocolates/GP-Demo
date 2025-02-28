@@ -52,3 +52,18 @@ func (ctl *SalaryController) GetSalaryDetails(c *gin.Context) {
 	}
 	utils.RespondSuccess(c, salary)
 }
+
+// GetSalaryHistory 查看薪资发放记录
+func (ctl *SalaryController) GetSalaryHistory(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "未授权")
+		return
+	}
+	salaries, err := ctl.salaryService.GetSalaryHistory(c.Request.Context(), userID.(uint))
+	if err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "获取薪资记录失败")
+		return
+	}
+	utils.RespondSuccess(c, salaries)
+}

@@ -12,19 +12,21 @@ type Response struct {
 	Data    interface{} `json:"data"`
 }
 
+// RespondSuccess 返回成功响应
 func RespondSuccess(c *gin.Context, data interface{}) {
-	c.JSON(http.StatusOK, Response{
-		Code:    http.StatusOK,
-		Message: "success",
-		Data:    data,
+	c.JSON(http.StatusOK, gin.H{
+		"code":    http.StatusOK,
+		"message": "成功",
+		"data":    data,
 	})
 }
 
-func RespondError(c *gin.Context, code int, message string) {
-	c.JSON(code, Response{
-		Code:    code,
-		Message: message,
-		Data:    nil,
+// RespondError 返回错误响应
+func RespondError(c *gin.Context, status int, message string) {
+	c.JSON(status, gin.H{
+		"code":    1,
+		"message": message,
+		"data":    nil,
 	})
 }
 

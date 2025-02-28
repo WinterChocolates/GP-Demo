@@ -91,3 +91,32 @@ func (ctl *JobController) UpdateJob(c *gin.Context) {
 
 	utils.RespondSuccess(c, nil)
 }
+
+// ApplyForJob 申请职位
+func (ctl *JobController) ApplyForJob(c *gin.Context) {
+	userID, _ := c.Get("userID") // 从认证中间件获取用户ID
+	jobID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		utils.RespondError(c, http.StatusBadRequest, "无效的职位ID")
+		return
+	}
+	if err := ctl.jobService.ApplyForJob(c.Request.Context(), userID.(uint), uint(jobID)); err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.RespondSuccess(c, gin.H{"message": "申请成功"})
+}
+
+// DeleteJob 删除职位
+func (ctl *JobController) DeleteJob(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		utils.RespondError(c, http.StatusBadRequest, "无效的职位ID")
+		return
+	}
+	if err := ctl.jobService.DeleteJob(c.Request.Context(), uint(id)); err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "删除职位失败")
+		return
+	}
+	utils.RespondSuccess(c, gin.H{"message": "职位删除成功"})
+}

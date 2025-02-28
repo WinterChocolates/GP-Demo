@@ -49,14 +49,14 @@ func StartServer(router *gin.Engine) {
 			log.Println("✅ 服务器正常关闭")
 		}
 	case sig := <-sigChan:
-		log.Printf("🛑 收到信号 %s，开始优雅关闭...", sig)
+		log.Printf("🛑 收到信号 %s，关闭服务器中...", sig)
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		if err := server.Shutdown(ctx); err != nil {
 			log.Printf("❌ 服务器关闭异常: %v", err)
 		} else {
-			log.Println("✅ 服务器优雅关闭完成")
+			log.Println("✅ 服务器已关闭")
 		}
 	}
 }

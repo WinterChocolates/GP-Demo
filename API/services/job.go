@@ -59,16 +59,13 @@ func (s *JobService) GetOpenJobs(ctx context.Context, page, pageSize int) ([]mod
 // ApplyForJob 申请职位
 func (s *JobService) ApplyForJob(ctx context.Context, userID, jobID uint) error {
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// 检查职位是否开放
 		var job models.Job
 		if err := tx.First(&job, jobID).Error; err != nil {
-			return err
+			return err // 职位不存在
 		}
 		if job.Status != "open" {
 			return errors.New("该职位已关闭申请")
 		}
-
-		// 检查是否重复申请
 		var count int64
 		if err := tx.Model(&models.Application{}).
 			Where("user_id = ? AND job_id = ?", userID, jobID).
@@ -78,8 +75,6 @@ func (s *JobService) ApplyForJob(ctx context.Context, userID, jobID uint) error 
 		if count > 0 {
 			return errors.New("已申请过该职位")
 		}
-
-		// 创建申请记录
 		application := models.Application{
 			UserID: userID,
 			JobID:  jobID,
@@ -87,4 +82,9 @@ func (s *JobService) ApplyForJob(ctx context.Context, userID, jobID uint) error 
 		}
 		return tx.Create(&application).Error
 	})
+}
+
+// DeleteJob 删除职位
+func (s *JobService) DeleteJob(ctx context.Context, jobID uint) error {
+	return s.db.WithContext(ctx).Delete(&models.Job{}, jobID).Error
 }

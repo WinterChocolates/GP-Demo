@@ -13,6 +13,7 @@ import (
 )
 
 type UserController struct {
+	BaseController
 	userService *services.UserService
 }
 
@@ -21,32 +22,50 @@ func NewUserController(us *services.UserService) *UserController {
 }
 
 func (ctl *UserController) Register(c *gin.Context) {
-	var user struct {
+	var request struct {
 		Username string `json:"username" binding:"required"`
 		Password string `json:"password" binding:"required"`
+		Phone    string `json:"phone"`
+		Email    string `json:"email"`
 	}
 
-	if err := c.ShouldBindJSON(&user); err != nil {
-		utils.RespondError(c, http.StatusBadRequest, "无效的请求参数")
+	if !ctl.BindJSON(c, &request) {
 		return
 	}
 
-	// 调用服务层
-	err := ctl.userService.RegisterUser(c.Request.Context(), &models.User{
-		Username:     user.Username,
-		PasswordHash: user.Password,
-	})
+	// 验证至少填写一种联系方式
+	if request.Phone == "" && request.Email == "" {
+		utils.RespondError(c, http.StatusBadRequest, "必须填写手机号或邮箱")
+		return
+	}
 
-	if err != nil {
+	// 创建用户对象
+	newUser := &models.User{
+		Username:     request.Username,
+		PasswordHash: request.Password,
+		Phone:        request.Phone,
+		Email:        request.Email,
+		Usertype:     "candidate",
+	}
+
+	if err := ctl.userService.RegisterUser(c.Request.Context(), newUser); err != nil {
 		utils.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.RespondSuccess(c, nil)
+	utils.RespondSuccess(c, gin.H{
+		"user_id": newUser.ID,
+		"message": "注册成功，请完善简历信息",
+	})
 }
 
+// GetProfile 获取用户信息
 func (ctl *UserController) GetProfile(c *gin.Context) {
-	userID, _ := c.Get("userID")
+	userID, exists := c.Get("userID") // 从认证中间件获取用户ID
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "未授权")
+		return
+	}
 	user, err := ctl.userService.GetUserByID(c.Request.Context(), userID.(uint))
 	if err != nil {
 		utils.RespondError(c, http.StatusInternalServerError, "获取用户信息失败")
@@ -55,27 +74,23 @@ func (ctl *UserController) GetProfile(c *gin.Context) {
 	utils.RespondSuccess(c, user)
 }
 
+// UpdateProfile 更新用户信息
 func (ctl *UserController) UpdateProfile(c *gin.Context) {
-	userID, _ := c.Get("userID")
-	var updateData struct {
-		Department string `json:"department"`
+	userID, exists := c.Get("userID")
+	if !exists {
+		utils.RespondError(c, http.StatusUnauthorized, "未授权")
+		return
 	}
-
-	if err := c.ShouldBindJSON(&updateData); err != nil {
+	var updates map[string]interface{}
+	if err := c.ShouldBindJSON(&updates); err != nil {
 		utils.RespondError(c, http.StatusBadRequest, "无效的请求参数")
 		return
 	}
-
-	err := ctl.userService.UpdateProfile(c.Request.Context(), userID.(uint), map[string]interface{}{
-		"department": updateData.Department,
-	})
-
-	if err != nil {
-		utils.RespondError(c, http.StatusInternalServerError, "更新失败")
+	if err := ctl.userService.UpdateProfile(c.Request.Context(), userID.(uint), updates); err != nil {
+		utils.RespondError(c, http.StatusInternalServerError, "更新用户信息失败")
 		return
 	}
-
-	utils.RespondSuccess(c, nil)
+	utils.RespondSuccess(c, gin.H{"message": "用户信息更新成功"})
 }
 
 func (ctl *UserController) Login(c *gin.Context) {
