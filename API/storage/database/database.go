@@ -105,6 +105,7 @@ func autoMigrate(db *gorm.DB) error {
 		&models.Training{},
 		&models.TrainingRecord{},
 		&models.User{},
+		&models.Resume{},
 	)
 }
 
