@@ -44,8 +44,9 @@ func InitConfig() error {
 
 	// 输出关键配置
 	log.Println("📄 有效配置:")
+	log.Printf("  连接MySQL地址为: %s:%d", viper.GetString("database.mysql.host"), viper.GetInt("database.mysql.port"))
+	log.Printf("  连接Redis地址为: %s:%d", viper.GetString("database.redis.host"), viper.GetInt("database.redis.port"))
 	log.Printf("  Server Port: %s", viper.GetString("server.port"))
-	log.Printf("  MySQL DSN: %s", viper.GetString("database.mysql.dsn"))
 	log.Printf("  JWT Secret: %s", maskSecret(viper.GetString("jwt.secret")))
 
 	return nil
