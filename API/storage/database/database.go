@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"API/models"
+
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -37,7 +38,7 @@ func loadMySQLConfig() MySQLConfig {
 
 func InitMySQL() (*gorm.DB, error) {
 	config := loadMySQLConfig()
-	log.Printf("尝试连接数据库，DSN: %s", config.DSN)
+	log.Printf("尝试连接数据库...")
 
 	var db *gorm.DB
 	var err error
