@@ -1,10 +1,19 @@
 database:
   mysql:
-    dsn: "winterchocolates:3uRfSQjfpn]@tcp(192.168.200.200:3306)/hrms?charset=utf8mb4&parseTime=True"
+    host: "192.168.200.200"
+    port: 3306
+    username: "winterchocolates"
+    password: "3uRfSQjfpn]"
+    dbname: "hrms"
+    charset: "utf8mb4"
+    parse_time: true
     max_retries: 3
     retry_interval: 5
+    max_open_conn: 100
+    max_lifetime: 3600
   redis:
-    addr: "192.168.200.200:6379"
+    host: "192.168.200.200"
+    port: 6379
     password: "3uRfSQjfpn]"
     db: 0
     pool_size: 20
