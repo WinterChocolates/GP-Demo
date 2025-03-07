@@ -17,7 +17,13 @@ import (
 var DB *gorm.DB
 
 type MySQLConfig struct {
-	DSN           string
+	Host          string
+	Port          int
+	Username      string
+	Password      string
+	DBName        string
+	Charset       string
+	ParseTime     bool
 	MaxIdleConn   int
 	MaxOpenConn   int
 	MaxLifetime   time.Duration
@@ -27,7 +33,13 @@ type MySQLConfig struct {
 
 func loadMySQLConfig() MySQLConfig {
 	return MySQLConfig{
-		DSN:           viper.GetString("database.mysql.dsn"),
+		Host:          viper.GetString("database.mysql.host"),
+		Port:          viper.GetInt("database.mysql.port"),
+		Username:      viper.GetString("database.mysql.username"),
+		Password:      viper.GetString("database.mysql.password"),
+		DBName:        viper.GetString("database.mysql.dbname"),
+		Charset:       viper.GetString("database.mysql.charset"),
+		ParseTime:     viper.GetBool("database.mysql.parse_time"),
 		MaxIdleConn:   viper.GetInt("database.mysql.max_idle_conn"),
 		MaxOpenConn:   viper.GetInt("database.mysql.max_open_conn"),
 		MaxLifetime:   viper.GetDuration("database.mysql.max_lifetime") * time.Second,
@@ -36,15 +48,27 @@ func loadMySQLConfig() MySQLConfig {
 	}
 }
 
+func (c MySQLConfig) BuildDSN() string {
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=%v",
+		c.Username,
+		c.Password,
+		c.Host,
+		c.Port,
+		c.DBName,
+		c.Charset,
+		c.ParseTime,
+	)
+}
+
 func InitMySQL() (*gorm.DB, error) {
 	config := loadMySQLConfig()
-	log.Printf("尝试连接数据库...")
+	log.Println("正在尝试连接数据库...")
 
 	var db *gorm.DB
 	var err error
 
 	for attempt := 1; attempt <= config.MaxRetries+1; attempt++ {
-		db, err = gorm.Open(mysql.Open(config.DSN), &gorm.Config{
+		db, err = gorm.Open(mysql.Open(config.BuildDSN()), &gorm.Config{
 			DisableForeignKeyConstraintWhenMigrating: true,
 			Logger:                                   logger.Default.LogMode(logger.Info),
 		})

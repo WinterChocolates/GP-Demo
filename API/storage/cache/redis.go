@@ -13,7 +13,8 @@ import (
 var RedisClient *redis.Client
 
 type RedisConfig struct {
-	Addr          string
+	Host          string
+	Port          int
 	Password      string
 	DB            int
 	PoolSize      int
@@ -27,7 +28,8 @@ type RedisConfig struct {
 
 func loadRedisConfig() *RedisConfig {
 	return &RedisConfig{
-		Addr:          viper.GetString("database.redis.addr"),
+		Host:          viper.GetString("database.redis.host"),
+		Port:          viper.GetInt("database.redis.port"),
 		Password:      viper.GetString("database.redis.password"),
 		DB:            viper.GetInt("database.redis.db"),
 		PoolSize:      viper.GetInt("database.redis.pool_size"),
@@ -40,12 +42,16 @@ func loadRedisConfig() *RedisConfig {
 	}
 }
 
+func (c *RedisConfig) GetAddr() string {
+	return fmt.Sprintf("%s:%d", c.Host, c.Port)
+}
+
 func InitRedis() (*redis.Client, error) {
 	config := loadRedisConfig()
-	log.Printf("尝试连接Redis，地址: %s", config.Addr)
+	log.Printf("正在尝试连接Redis...")
 
 	RedisClient = redis.NewClient(&redis.Options{
-		Addr:         config.Addr,
+		Addr:         config.GetAddr(),
 		Password:     config.Password,
 		DB:           config.DB,
 		PoolSize:     config.PoolSize,
