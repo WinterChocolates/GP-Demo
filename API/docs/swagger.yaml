@@ -1,0 +1,618 @@
+definitions:
+  docs.SwaggerResponse:
+    properties:
+      code:
+        example: 200
+        type: integer
+      data: {}
+      message:
+        example: 成功
+        type: string
+      request_id:
+        example: req-123456
+        type: string
+      timestamp:
+        example: 1625123456
+        type: integer
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  models.Application:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      job:
+        $ref: '#/definitions/models.Job'
+      jobID:
+        type: integer
+      status:
+        type: string
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      userID:
+        type: integer
+    type: object
+  models.Attendance:
+    properties:
+      clockIn:
+        type: string
+      clockOut:
+        type: string
+      createdAt:
+        type: string
+      date:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      duration:
+        type: number
+      id:
+        type: integer
+      status:
+        type: string
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      userID:
+        type: integer
+    type: object
+  models.Job:
+    properties:
+      applications:
+        items:
+          $ref: '#/definitions/models.Application'
+        type: array
+      category:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      experience:
+        type: integer
+      expirationDate:
+        type: string
+      id:
+        type: integer
+      location:
+        type: string
+      requirements:
+        type: string
+      salaryRange:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.Permission:
+    properties:
+      code:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: integer
+      roles:
+        items:
+          $ref: '#/definitions/models.Role'
+        type: array
+      updatedAt:
+        type: string
+    type: object
+  models.Resume:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      education:
+        type: string
+      expectedSalary:
+        type: number
+      filePath:
+        type: string
+      id:
+        type: integer
+      skills:
+        type: string
+      updatedAt:
+        type: string
+      userID:
+        type: integer
+      workExperience:
+        type: string
+    type: object
+  models.Role:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      permissions:
+        items:
+          $ref: '#/definitions/models.Permission'
+        type: array
+      updatedAt:
+        type: string
+      users:
+        items:
+          $ref: '#/definitions/models.User'
+        type: array
+    type: object
+  models.Salary:
+    properties:
+      base:
+        type: number
+      bonus:
+        type: number
+      createdAt:
+        type: string
+      deductions:
+        type: number
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      month:
+        type: string
+      paymentDate:
+        type: string
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      userID:
+        type: integer
+    type: object
+  models.Training:
+    properties:
+      capacity:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      endTime:
+        type: string
+      id:
+        type: integer
+      location:
+        type: string
+      records:
+        items:
+          $ref: '#/definitions/models.TrainingRecord'
+        type: array
+      startTime:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.TrainingRecord:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      score:
+        type: integer
+      status:
+        type: string
+      training:
+        $ref: '#/definitions/models.Training'
+      trainingID:
+        type: integer
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      userID:
+        type: integer
+    type: object
+  models.User:
+    properties:
+      active:
+        type: boolean
+      applications:
+        items:
+          $ref: '#/definitions/models.Application'
+        type: array
+      attendances:
+        items:
+          $ref: '#/definitions/models.Attendance'
+        type: array
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      department:
+        type: string
+      education:
+        type: string
+      email:
+        type: string
+      experience:
+        type: string
+      hireDate:
+        type: string
+      id:
+        type: integer
+      passwordHash:
+        type: string
+      phone:
+        type: string
+      position:
+        type: string
+      roles:
+        items:
+          $ref: '#/definitions/models.Role'
+        type: array
+      salaries:
+        items:
+          $ref: '#/definitions/models.Salary'
+        type: array
+      salaryBase:
+        type: number
+      skills:
+        type: string
+      trainingRecords:
+        items:
+          $ref: '#/definitions/models.TrainingRecord'
+        type: array
+      updatedAt:
+        type: string
+      username:
+        type: string
+      usertype:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /applications/{id}/status:
+    put:
+      parameters:
+      - description: 申请ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 状态更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/docs.SwaggerResponse'
+      security:
+      - Bearer: []
+      summary: 更新申请状态
+      tags:
+      - 申请管理
+  /attendance/clock-in:
+    post:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/docs.SwaggerResponse'
+      security:
+      - Bearer: []
+      summary: 上班打卡
+      tags:
+      - 考勤管理
+  /attendance/clock-out:
+    post:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/docs.SwaggerResponse'
+      security:
+      - Bearer: []
+      summary: 下班打卡
+      tags:
+      - 考勤管理
+  /attendance/monthly:
+    get:
+      parameters:
+      - description: 月份格式YYYY-MM
+        in: query
+        name: month
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/docs.SwaggerResponse'
+      security:
+      - Bearer: []
+      summary: 获取月度考勤
+      tags:
+      - 考勤管理
+  /attendance/stats:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/docs.SwaggerResponse'
+      security:
+      - Bearer: []
+      summary: 获取考勤统计
+      tags:
+      - 考勤管理
+  /resume:
+    post:
+      parameters:
+      - description: 简历信息
+        in: body
+        name: resume
+        required: true
+        schema:
+          $ref: '#/definitions/models.Resume'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/docs.SwaggerResponse'
+      security:
+      - Bearer: []
+      summary: 提交简历信息
+      tags:
+      - 用户管理
+  /training-records/{id}:
+    put:
+      parameters:
+      - description: 记录ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新请求
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/docs.SwaggerResponse'
+      security:
+      - Bearer: []
+      summary: 更新培训记录
+      tags:
+      - 培训管理
+  /training-records/{id}/cancel:
+    post:
+      parameters:
+      - description: 记录ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/docs.SwaggerResponse'
+      security:
+      - Bearer: []
+      summary: 取消培训注册
+      tags:
+      - 培训管理
+  /trainings:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/docs.SwaggerResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Training'
+                  type: array
+              type: object
+      security:
+      - Bearer: []
+      summary: 获取培训列表
+      tags:
+      - 培训管理
+    post:
+      parameters:
+      - description: 培训课程信息
+        in: body
+        name: training
+        required: true
+        schema:
+          $ref: '#/definitions/models.Training'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/docs.SwaggerResponse'
+      security:
+      - Bearer: []
+      summary: 创建培训课程
+      tags:
+      - 培训管理
+  /trainings/{id}:
+    get:
+      parameters:
+      - description: 培训ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/docs.SwaggerResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Training'
+              type: object
+      security:
+      - Bearer: []
+      summary: 获取培训详情
+      tags:
+      - 培训管理
+  /trainings/{id}/register:
+    post:
+      parameters:
+      - description: 培训ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/docs.SwaggerResponse'
+      security:
+      - Bearer: []
+      summary: 报名培训
+      tags:
+      - 培训管理
+  /trainings/my:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/docs.SwaggerResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.TrainingRecord'
+                  type: array
+              type: object
+      security:
+      - Bearer: []
+      summary: 获取我的培训记录
+      tags:
+      - 培训管理
+  /users/login:
+    post:
+      parameters:
+      - description: 登录信息
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/docs.SwaggerResponse'
+            - properties:
+                data:
+                  properties:
+                    token:
+                      type: string
+                  type: object
+              type: object
+      summary: 用户登录
+      tags:
+      - 用户管理
+  /users/profile:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/docs.SwaggerResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+      security:
+      - Bearer: []
+      summary: 获取用户信息
+      tags:
+      - 用户管理
+    put:
+      parameters:
+      - description: 更新信息
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/docs.SwaggerResponse'
+      security:
+      - Bearer: []
+      summary: 更新用户信息
+      tags:
+      - 用户管理
+  /users/register:
+    post:
+      parameters:
+      - description: 注册信息
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/docs.SwaggerResponse'
+      summary: 用户注册
+      tags:
+      - 用户管理
+swagger: "2.0"
