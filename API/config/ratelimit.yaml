@@ -1,0 +1,10 @@
+# 限流器配置
+ratelimit:
+  enabled: true
+  max_requests: 100  # 每个时间窗口内允许的最大请求数
+  window: 60        # 时间窗口大小（秒）
+  burst: 200        # 突发流量允许的请求数
+  exclude_paths:    # 不进行限流的路径
+    - "/api/v1/health"
+    - "/api/v1/metrics"
+    - "/api/v1/docs"
