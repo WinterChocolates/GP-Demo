@@ -23,8 +23,8 @@ func NewResumeController(s *services.ResumeService) *ResumeController {
 // @Summary 提交简历信息
 // @Tags 用户管理
 // @Security Bearer
-// @Param body models.Resume true "简历信息"
-// @Success 200 {object} utils.Response
+// @Param resume body models.Resume true "简历信息"
+// @Success 200 {object} docs.SwaggerResponse
 // @Router /resume [post]
 func (ctl *ResumeController) SubmitResume(c *gin.Context) {
 	userID, _ := ctl.GetAuthUser(c)

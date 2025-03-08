@@ -18,6 +18,13 @@ func NewApplicationController(as *services.ApplicationService) *ApplicationContr
 }
 
 // UpdateApplicationStatus 更新申请状态
+// @Summary 更新申请状态
+// @Tags 申请管理
+// @Security Bearer
+// @Param id path int true "申请ID"
+// @Param request body object true "状态更新请求"
+// @Success 200 {object} docs.SwaggerResponse
+// @Router /applications/{id}/status [put]
 func (ctl *ApplicationController) UpdateApplicationStatus(c *gin.Context) {
 	applicationID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

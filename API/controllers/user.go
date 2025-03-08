@@ -21,6 +21,12 @@ func NewUserController(us *services.UserService) *UserController {
 	return &UserController{userService: us}
 }
 
+// Register 用户注册
+// @Summary 用户注册
+// @Tags 用户管理
+// @Param request body object true "注册信息"
+// @Success 200 {object} docs.SwaggerResponse
+// @Router /users/register [post]
 func (ctl *UserController) Register(c *gin.Context) {
 	var request struct {
 		Username string `json:"username" binding:"required"`
@@ -60,6 +66,11 @@ func (ctl *UserController) Register(c *gin.Context) {
 }
 
 // GetProfile 获取用户信息
+// @Summary 获取用户信息
+// @Tags 用户管理
+// @Security Bearer
+// @Success 200 {object} docs.SwaggerResponse{data=models.User}
+// @Router /users/profile [get]
 func (ctl *UserController) GetProfile(c *gin.Context) {
 	userID, exists := c.Get("userID") // 从认证中间件获取用户ID
 	if !exists {
@@ -75,6 +86,12 @@ func (ctl *UserController) GetProfile(c *gin.Context) {
 }
 
 // UpdateProfile 更新用户信息
+// @Summary 更新用户信息
+// @Tags 用户管理
+// @Security Bearer
+// @Param request body object true "更新信息"
+// @Success 200 {object} docs.SwaggerResponse
+// @Router /users/profile [put]
 func (ctl *UserController) UpdateProfile(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -93,6 +110,12 @@ func (ctl *UserController) UpdateProfile(c *gin.Context) {
 	utils.RespondSuccess(c, gin.H{"message": "用户信息更新成功"})
 }
 
+// Login 用户登录
+// @Summary 用户登录
+// @Tags 用户管理
+// @Param request body object true "登录信息"
+// @Success 200 {object} docs.SwaggerResponse{data=object{token=string}}
+// @Router /users/login [post]
 func (ctl *UserController) Login(c *gin.Context) {
 	var credentials struct {
 		Username string `json:"username" binding:"required"`

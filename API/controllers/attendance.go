@@ -6,6 +6,7 @@ import (
 
 	"API/services"
 	"API/utils"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,7 +23,7 @@ func NewAttendanceController(s *services.AttendanceService) *AttendanceControlle
 // @Summary 上班打卡
 // @Tags 考勤管理
 // @Security Bearer
-// @Success 200 {object} utils.Response
+// @Success 200 {object} docs.SwaggerResponse
 // @Router /attendance/clock-in [post]
 func (ctl *AttendanceController) ClockIn(c *gin.Context) {
 	userID, _ := ctl.GetAuthUser(c)
@@ -38,6 +39,12 @@ func (ctl *AttendanceController) ClockIn(c *gin.Context) {
 	})
 }
 
+// ClockOut 下班打卡
+// @Summary 下班打卡
+// @Tags 考勤管理
+// @Security Bearer
+// @Success 200 {object} docs.SwaggerResponse
+// @Router /attendance/clock-out [post]
 func (ctl *AttendanceController) ClockOut(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	err := ctl.service.ClockOut(c.Request.Context(), userID.(uint))
@@ -53,7 +60,7 @@ func (ctl *AttendanceController) ClockOut(c *gin.Context) {
 // @Tags 考勤管理
 // @Security Bearer
 // @Param month query string true "月份格式YYYY-MM"
-// @Success 200 {object} utils.Response{data=[]models.Attendance}
+// @Success 200 {object} docs.SwaggerResponse
 // @Router /attendance/monthly [get]
 func (ctl *AttendanceController) GetMonthly(c *gin.Context) {
 	userID, roles := ctl.GetAuthUser(c)
@@ -82,6 +89,11 @@ func (ctl *AttendanceController) GetMonthly(c *gin.Context) {
 }
 
 // GetAttendanceStats 获取考勤统计
+// @Summary 获取考勤统计
+// @Tags 考勤管理
+// @Security Bearer
+// @Success 200 {object} docs.SwaggerResponse
+// @Router /attendance/stats [get]
 func (ctl *AttendanceController) GetAttendanceStats(c *gin.Context) {
 	stats, err := ctl.service.GetAttendanceStats(c.Request.Context())
 	if err != nil {
