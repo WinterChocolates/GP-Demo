@@ -11,6 +11,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "API/docs"
 )
 
 // 使用base_routes.go中定义的中间件
@@ -50,6 +53,9 @@ func SetupRouter(userService *services.UserService, jobService *services.JobServ
 		application: controllers.NewApplicationController(services.NewApplicationService(database.DB)),
 		role:        controllers.NewRoleController(services.NewRoleService(database.DB)),
 	}
+
+	// 配置Swagger
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// 全局中间件
 	router.Use(
