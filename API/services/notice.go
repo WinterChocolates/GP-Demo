@@ -6,16 +6,22 @@ import (
 
 	"API/models"
 	"API/storage/cache"
+
 	"gorm.io/gorm"
 )
 
 type NoticeService struct {
+	*BaseService[models.Notice]
 	db    *gorm.DB
 	cache cache.Provider
 }
 
 func NewNoticeService(db *gorm.DB, cache cache.Provider) *NoticeService {
-	return &NoticeService{db: db, cache: cache}
+	return &NoticeService{
+		BaseService: NewBaseService[models.Notice](db),
+		db:          db,
+		cache:       cache,
+	}
 }
 
 func (s *NoticeService) CreateNotice(ctx context.Context, notice *models.Notice) error {
@@ -55,13 +61,13 @@ func (s *NoticeService) GetDepartmentNotices(ctx context.Context, department str
 	if err := s.cache.GetObject(ctx, cacheKey, &notices); err == nil {
 		return notices, nil
 	}
-	
+
 	err := s.db.WithContext(ctx).
 		Where("(target_type = 'department' AND department = ?) OR target_type = 'all'", department).
 		Where("expire_time > ? OR expire_time IS NULL", time.Now()).
 		Order("created_at DESC").
 		Find(&notices).Error
-		
+
 	if err == nil {
 		err := s.cache.SetObject(ctx, cacheKey, notices, 5*time.Minute)
 		if err != nil {
@@ -88,7 +94,7 @@ func (s *NoticeService) MarkNoticeAsRead(ctx context.Context, userID uint, notic
 	if err := s.db.WithContext(ctx).First(&notice, noticeID).Error; err != nil {
 		return err
 	}
-	
+
 	// 检查是否已经标记为已读
 	var count int64
 	s.db.WithContext(ctx).Model(&models.NoticeRead{}).Where("user_id = ? AND notice_id = ?", userID, noticeID).Count(&count)
@@ -96,12 +102,12 @@ func (s *NoticeService) MarkNoticeAsRead(ctx context.Context, userID uint, notic
 		// 已经标记为已读，直接返回成功
 		return nil
 	}
-	
+
 	// 创建已读记录
 	noticeRead := models.NoticeRead{
 		UserID:   userID,
 		NoticeID: noticeID,
 	}
-	
+
 	return s.db.WithContext(ctx).Create(&noticeRead).Error
 }

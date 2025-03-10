@@ -6,11 +6,16 @@ import (
 	"fmt"
 
 	"API/models"
+
 	"gorm.io/gorm"
 )
 
 type SalaryService struct {
 	db *gorm.DB
+}
+
+func (s *SalaryService) GetSalaryDetailByMonth(ctx context.Context, userID uint, month string) (*models.Salary, error) {
+	return s.GetSalaryDetails(ctx, userID, month, false)
 }
 
 func NewSalaryService(db *gorm.DB) *SalaryService {

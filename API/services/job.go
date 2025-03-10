@@ -6,15 +6,20 @@ import (
 	"fmt"
 
 	"API/models"
+
 	"gorm.io/gorm"
 )
 
 type JobService struct {
+	*BaseService[models.Job]
 	db *gorm.DB
 }
 
 func NewJobService(db *gorm.DB) *JobService {
-	return &JobService{db: db}
+	return &JobService{
+		BaseService: NewBaseService[models.Job](db),
+		db:          db,
+	}
 }
 
 // CreateJob 创建新职位
