@@ -17,9 +17,6 @@ type User struct {
 	Position     string     `gorm:"size:50;index;comment:职位"`
 	HireDate     *time.Time `gorm:"comment:入职日期"`
 	SalaryBase   float64    `gorm:"type:decimal(12,2);comment:基本工资"`
-	Education    string     `gorm:"type:text;comment:教育背景"`
-	Experience   string     `gorm:"type:text;comment:工作经历"`
-	Skills       string     `gorm:"type:text;comment:技能列表"`
 	Active       bool       `gorm:"default:true;index;comment:账户状态"`
 
 	Applications    []Application    `gorm:"foreignKey:UserID"`
