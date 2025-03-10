@@ -45,7 +45,7 @@ func Start() {
 	jobService := services.NewJobService(db)
 
 	// 创建增强版路由
-	router := routes.SetupEnhancedRouter(userService, jobService)
+	router := routes.SetupRouter(userService, jobService)
 
 	// 启动服务器
 	log.Println("🚀 启动服务器...")
